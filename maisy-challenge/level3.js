@@ -44,8 +44,8 @@ this.physics.world.bounds.height = this.groundLayer.height;
 this.startPoint = map.findObject("objectLayer", obj => obj.name === "startPoint");
 this.endPoint = map.findObject("objectLayer", obj => obj.name === "endPoint");
  // cat position
-this.cat1 = map.findObject("objectLayer", obj => obj.name === "cat1");
-// this.cat2 = map.findObject("objectLayer", obj => obj.name === "cat2");
+var cat1 = map.findObject("objectLayer", obj => obj.name === "cat1");
+var cat2 = map.findObject("objectLayer", obj => obj.name === "cat2");
 
 //character sprites
 this.player = this.physics.add.sprite(this.startPoint.x, this.startPoint.y, 'player')
@@ -125,18 +125,30 @@ repeat: -1
 });
 
 
-this.time.addEvent({ delay: 1000, callback: this.moveRightLeft1, callbackScope: this, loop: false });
-this.time.addEvent({ delay: 1000, callback: this.moveRightLeft2, callbackScope: this, loop: false });
+this.time.addEvent({ delay: 2000, callback: this.moveRightLeft1, callbackScope: this, loop: true });
+this.time.addEvent({ delay: 4000, callback: this.moveRightLeft2, callbackScope: this, loop: true });
 
-this.cat1 = this.physics.add.sprite(550, 350, 'cat').setScale(0.8).play('cat_walk');
-this.cat2 = this.physics.add.sprite(550, 680, 'cat').setScale(0.8).play('cat_walk');
+//  cat
+this.cat = this.physics.add.group();
+
+this.cat.create(cat1.x, cat1.y,'cat').setScale(0.8);
+this.cat.create(cat2.x, cat2.y, 'cat').setScale(0.8);
+
+this.physics.add.collider(this.shelfLayer, this.cat);
+this.physics.add.overlap(this.player, this.cat, this.hitcat, null, this );
+this.cat.children.iterate(cat => {
+   cat.play('cat_walk');
+ })
+
+// this.cat1 = this.physics.add.sprite(550, 350, 'cat').setScale(0.8).play('cat_walk');
+// this.cat2 = this.physics.add.sprite(550, 680, 'cat').setScale(0.8).play('cat_walk').setCollideWorldBounds(true);
 
 //overlap cat
-this.physics.add.overlap(this.player, this.cat1, this.hitcat, null, this );
-this.physics.add.overlap(this.player, this.cat2, this.hitcat, null, this );
+// this.physics.add.overlap(this.player, this.cat1, this.hitcat, null, this );
+// this.physics.add.overlap(this.player, this.cat2, this.hitcat, null, this );
 
 // collider with cat
-this.physics.add.collider(this.shelfLayer, this.cat2, this.hitcat, null, this);
+// this.physics.add.collider(this.shelfLayer, this.cat2, this.hitcat, null, this);
 
 // collide with obstacle layer
 this.obstacleLayer.setCollisionByProperty({ obstacle: true });
@@ -203,6 +215,7 @@ this.shelfLayer.setCollisionByProperty({shelf3:true})
 this.shelfLayer.setCollisionByProperty({shelf4:true})
 
 this.physics.add.collider(this.shelfLayer,this.player);
+this.physics.add.collider(this.shelfLayer,this.cat2);
  
 
 }
@@ -319,44 +332,25 @@ update() {
 }
 
 // cat movement
-moveRightLeft1() {
-    console.log('moveleft')
-    this.tweens.timeline({
-       targets: this.cat1,
-       loop: -1, // loop forever
-       ease: 'Linear',
-       duration: 2000,
-        tweens: [
-       {
-          x: 900,
-       },
-        {
-          x: 550,
-       },
-     ]
-     });
-    }
 
-    moveRightLeft2() {
-        console.log('moveleft')
-        this.tweens.timeline({
-         targets: this.cat2,
-         loop: -1, // loop forever
-         ease: 'Linear',
-         duration: 2000,
-         tweens: [
-         {
-            x: 950,
-         },
-         {
-            x: 550,
-         },
-         {
-            x: 950,
-         },
-         ]
-         });
-        }
+moveRightLeft1(bombs) {
+   this.tweens.add({
+       targets: this.cat.getChildren().map(function (c) { return c.body.velocity }),
+       x: Phaser.Math.Between(-850, -900) ,
+       ease: 'Sine.easeInOut',
+       yoyo: true,
+       repeat: false
+   });
+}
+moveRightLeft2(bombs) {
+   this.tweens.add({
+       targets: this.cat.getChildren().map(function (c) { return c.body.velocity }),
+       x:  Phaser.Math.Between(800, 650),
+       ease: 'Sine.easeInOut',
+       yoyo: true,
+       repeat: false
+   });
+}
 
     hitcat(player, sprite){
         console.log("hitcat");
