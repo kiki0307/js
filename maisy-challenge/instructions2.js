@@ -7,7 +7,7 @@ class instructions2 extends Phaser.Scene {
 
 
     preload() {
-        this.load.image('main2','assets/instructionsPage.png');
+        this.load.image('main2','assets/InstructionsPage.png');
 
     }
 
