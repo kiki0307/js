@@ -45,7 +45,7 @@ this.startPoint = map.findObject("objectLayer", obj => obj.name === "startPoint"
 this.endPoint = map.findObject("objectLayer", obj => obj.name === "endPoint");
  // cat position
 this.cat1 = map.findObject("objectLayer", obj => obj.name === "cat1");
-
+// this.cat2 = map.findObject("objectLayer", obj => obj.name === "cat2");
 
 //character sprites
 this.player = this.physics.add.sprite(this.startPoint.x, this.startPoint.y, 'player')
@@ -129,12 +129,14 @@ this.time.addEvent({ delay: 1000, callback: this.moveRightLeft1, callbackScope: 
 this.time.addEvent({ delay: 1000, callback: this.moveRightLeft2, callbackScope: this, loop: false });
 
 this.cat1 = this.physics.add.sprite(550, 350, 'cat').setScale(0.8).play('cat_walk');
-this.cat2 = this.physics.add.sprite(550, 480, 'cat').setScale(0.8).play('cat_walk');
+this.cat2 = this.physics.add.sprite(550, 680, 'cat').setScale(0.8).play('cat_walk');
 
 //overlap cat
 this.physics.add.overlap(this.player, this.cat1, this.hitcat, null, this );
 this.physics.add.overlap(this.player, this.cat2, this.hitcat, null, this );
 
+// collider with cat
+this.physics.add.collider(this.shelfLayer, this.cat2, this.hitcat, null, this);
 
 // collide with obstacle layer
 this.obstacleLayer.setCollisionByProperty({ obstacle: true });
@@ -200,10 +202,8 @@ this.shelfLayer.setCollisionByProperty({shelf2:true})
 this.shelfLayer.setCollisionByProperty({shelf3:true})
 this.shelfLayer.setCollisionByProperty({shelf4:true})
 
-this.physics.add.collider(this.shelfLayer,this.player);   
-
-
-   
+this.physics.add.collider(this.shelfLayer,this.player);
+ 
 
 }
 
@@ -211,9 +211,10 @@ this.physics.add.collider(this.shelfLayer,this.player);
 collectmeat(player, tile) {
     console.log('correctmeat', tile.index );
     this.meatLayer.removeTileAt(tile.x, tile.y); // remove the item
-    this.meatText.setText(this.meatCount);
+   
     this.meatCount += 1; 
     console.log(this.meatCount);
+    this.meatText.setText(this.meatCount);
     return false;
     }
     
@@ -263,6 +264,7 @@ hitobstacle(player, tile) {
        // delay 1 sec
        this.time.delayedCall(500,function() {
          this.meatCount = 0
+         this.liveCount = 3;
         // this.scene.restart();
        this.scene.start("failScene3");
     },[], this);
@@ -312,12 +314,7 @@ update() {
       this.scene.start("winScene");
   }
 
-       // Check for reaching endPoint object
-   //  if ( this.player.x >= this.endPoint.x && this.player.y >= this.endPoint.y ) {
-   //      console.log('Reached endPoint, loading next level');
-   //      this.scene.stop("level3");
-   //      this.scene.start("winScene");
-   //  }
+      
     
 }
 
@@ -343,17 +340,20 @@ moveRightLeft1() {
     moveRightLeft2() {
         console.log('moveleft')
         this.tweens.timeline({
-           targets: this.cat2,
-           loop: -1, // loop forever
-           ease: 'Linear',
-           duration: 2000,
-            tweens: [
-           {
-              x: 900,
-           },
-            {
-              x: 550,
-           },
+         targets: this.cat2,
+         loop: -1, // loop forever
+         ease: 'Linear',
+         duration: 2000,
+         tweens: [
+         {
+            x: 950,
+         },
+         {
+            x: 550,
+         },
+         {
+            x: 950,
+         },
          ]
          });
         }
@@ -367,6 +367,7 @@ moveRightLeft1() {
         // this.hitSnd.play();
         this.time.delayedCall(500,function() {
         this.meatCount = 0
+        this.liveCount = 3;
         this.scene.start("failScene3");
         },[], this);
         

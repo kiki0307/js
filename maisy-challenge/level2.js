@@ -168,9 +168,10 @@ this.physics.add.collider(this.shelfLayer,this.player);
 collectfruit(player, tile) {
 console.log('correctfruit', tile.index );
 this.fruitLayer.removeTileAt(tile.x, tile.y); // remove the item
-this.fruitText.setText(this.fruitCount);
+
 this.fruitCount += 1; 
 console.log(this.fruitCount);
+this.fruitText.setText(this.fruitCount);
 return false;
 }
 
@@ -221,6 +222,7 @@ hitobstacle(player, tile) {
        // delay 1 sec
        this.time.delayedCall(500,function() {
        this.fruitCount = 0
+       this.liveCount = 3;
         // this.scene.restart();
        this.scene.start("failScene2");
     },[], this);

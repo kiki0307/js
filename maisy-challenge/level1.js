@@ -125,16 +125,15 @@ create() {
       this.vegeLayer.setTileIndexCallback(12, this.wrongvege, this);
       this.vegeLayer.setTileIndexCallback(13, this.collectvege, this);
 
-    // this text will show the score
-    this.vegeText = this.add.text(750, 50, this.vegeCount, {
-    fontSize: '30px',
-    fill: '#221C48'
-    });
-   
-    // fix the text to the camera
-    this.vegeText.setScrollFactor(0);
-    this.vegeText.visible = true;
-  
+ 
+      this.vegeText = this.add.text(750, 50, this.vegeCount, {
+        fontSize: '30px',
+        fill: '#221C48'
+        });
+       
+        // fix the text to the camera
+        this.vegeText.setScrollFactor(0);
+        this.vegeText.visible = true; 
   
   
       this.cursors = this.input.keyboard.createCursorKeys();
@@ -156,10 +155,10 @@ create() {
   collectvege(player, tile) {
     console.log('correctvege', tile.index );
     this.vegeLayer.removeTileAt(tile.x, tile.y); // remove the item
-    this.vegeText.setText(this.vegeCount);
-    // stars.disableBody(true, true);
     this.vegeCount += 1; 
+   
     console.log(this.vegeCount);
+    this.vegeText.setText(this.vegeCount);
     return false;
 }
 
@@ -255,7 +254,8 @@ update() {
     //     this.scene.stop("level1");
     //     this.scene.start("level2");
     // }
-        
+        // this text will show the score
+     
       
 
 
