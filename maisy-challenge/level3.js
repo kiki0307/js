@@ -16,11 +16,21 @@ preload() {
    this.load.spritesheet('tiles3','assets/Tiles3.png',
    {frameWidth:64,frameHeight:64});
 
-//    player animations
+   //    player animations
    this.load.atlas('player', 'assets/Maisy.png', 'assets/Maisy.json');
    this.load.atlas('cat', 'assets/cat.png', 'assets/cat.json');
-// life image
+
+    //  obstacle animation
+    this.load.atlas('trap', 'assets/mousetrap.png', 'assets/mousetrap.json');
+
+   // life image
    this.load.image('heart', 'assets/life.png');
+
+   //mp3
+   this.load.audio('explode', 'assets/error_tone.mp3');
+   this.load.audio('collect', 'assets/collect_item.mp3');
+   this.load.audio('snap', 'assets/mouse_trap.mp3');
+   this.load.audio('bgmusic','assets/shopping.mp3');
 
 }
 
@@ -30,15 +40,34 @@ create() {
 var map = this.make.tilemap({key:'map3'});
 var Tiles = map.addTilesetImage('Tiles3','tiles3');
 
+ // music
+      
+ this.explodeSnd = this.sound.add('explode');
+ this.collectSnd = this.sound.add('collect');
+ this.snapSnd = this.sound.add('snap');
+ this.bgmusicSnd = this.sound.add('bgmusic');
+
+window.music1 = this.bgmusicSnd;
+
+window.music1.play();
+
+window.music1.loop = true;
+
 // create the ground layer
 this.groundLayer = map.createDynamicLayer('groundLayer',Tiles,0,0);
 this.shelfLayer = map.createDynamicLayer('shelfLayer',Tiles,0,0);
 this.meatLayer = map.createDynamicLayer('meatLayer',Tiles,0,0);
-this.obstacleLayer = map.createDynamicLayer('obstacleLayer',Tiles,0,0);
+// this.obstacleLayer = map.createDynamicLayer('obstacleLayer',Tiles,0,0);
 
 //world boundaries
 this.physics.world.bounds.width = this.groundLayer.width;
 this.physics.world.bounds.height = this.groundLayer.height;
+
+ //obstacle in tiles
+ this.obstacle_1 = map.findObject("objectLayer", obj => obj.name === "obstacle_1");
+ this.obstacle_2 = map.findObject("objectLayer", obj => obj.name === "obstacle_2");
+ this.obstacle_3 = map.findObject("objectLayer", obj => obj.name === "obstacle_3");
+ this.obstacle_4 = map.findObject("objectLayer", obj => obj.name === "obstacle_4");
 
 // Set starting and ending position using name
 this.startPoint = map.findObject("objectLayer", obj => obj.name === "startPoint");
@@ -110,6 +139,20 @@ frameRate:10,
 repeat: -1
 });
 
+// trap animation
+this.anims.create({
+    key:'trapAnim',
+    frames:[
+    {key: 'trap', frame: 'trap_1'},
+    {key: 'trap', frame: 'trap_2'},
+    {key: 'trap', frame: 'trap_3'},
+    {key: 'trap', frame: 'trap_4'},
+    ],
+            
+    frameRate:10,
+    repeat: -1
+    });
+
 // create cat animation
 this.anims.create({
     key:'cat_walk',
@@ -123,6 +166,7 @@ this.anims.create({
 frameRate:10,
 repeat: -1
 });
+
 
 
 this.time.addEvent({ delay: 2000, callback: this.moveRightLeft1, callbackScope: this, loop: true });
@@ -140,23 +184,26 @@ this.cat.children.iterate(cat => {
    cat.play('cat_walk');
  })
 
-// this.cat1 = this.physics.add.sprite(550, 350, 'cat').setScale(0.8).play('cat_walk');
-// this.cat2 = this.physics.add.sprite(550, 680, 'cat').setScale(0.8).play('cat_walk').setCollideWorldBounds(true);
+// create obstacle
+this.obstacle_1 = this.physics.add.sprite(this.obstacle_1.x, this.obstacle_1.y, 'trap').play('trapAnim');
+this.obstacle_2 = this.physics.add.sprite(this.obstacle_2.x, this.obstacle_2.y, 'trap').play('trapAnim');
+this.obstacle_3 = this.physics.add.sprite(this.obstacle_3.x, this.obstacle_3.y, 'trap').play('trapAnim');
+this.obstacle_4 = this.physics.add.sprite(this.obstacle_4.x, this.obstacle_4.y, 'trap').play('trapAnim');
 
-//overlap cat
-// this.physics.add.overlap(this.player, this.cat1, this.hitcat, null, this );
-// this.physics.add.overlap(this.player, this.cat2, this.hitcat, null, this );
+this.physics.add.overlap(this.player, this.obstacle_1, this.hitobstacle, null, this )
+this.physics.add.overlap(this.player, this.obstacle_2, this.hitobstacle, null, this )
+this.physics.add.overlap(this.player, this.obstacle_3, this.hitobstacle, null, this )
+this.physics.add.overlap(this.player, this.obstacle_4, this.hitobstacle, null, this )
 
-// collider with cat
-// this.physics.add.collider(this.shelfLayer, this.cat2, this.hitcat, null, this);
+
 
 // collide with obstacle layer
-this.obstacleLayer.setCollisionByProperty({ obstacle: true });
+// this.obstacleLayer.setCollisionByProperty({ obstacle: true });
 
-this.physics.add.collider(this.obstacleLayer, this.player);
+// this.physics.add.collider(this.obstacleLayer, this.player);
 
-//   hit obstacle layer
-this.obstacleLayer.setTileIndexCallback(21, this.hitobstacle, this);
+// //   hit obstacle layer
+// this.obstacleLayer.setTileIndexCallback(21, this.hitobstacle, this);
 
 
 // collide with fruit layer
@@ -226,6 +273,7 @@ collectmeat(player, tile) {
     this.meatLayer.removeTileAt(tile.x, tile.y); // remove the item
    
     this.meatCount += 1; 
+    this.collectSnd.play();
     console.log(this.meatCount);
     this.meatText.setText(this.meatCount);
     return false;
@@ -239,15 +287,15 @@ collectmeat(player, tile) {
     
     // // Default is 3 lives
     if ( this.liveCount === 2) {
-     // this.explodeSnd.play();
+     this.explodeSnd.play();
      this.cameras.main.shake(200);
      this.heart3.setVisible(false);
     } else if ( this.liveCount === 1) {
-     // this.explodeSnd.play();
+     this.explodeSnd.play();
      this.cameras.main.shake(200);
      this.heart2.setVisible(false);
     } else if ( this.liveCount === 0) {
-     // this.explodeSnd.play();
+     this.explodeSnd.play();
      this.cameras.main.shake(1000);
      this.heart1.setVisible(false);
      this.isDead = true;
@@ -257,6 +305,7 @@ collectmeat(player, tile) {
    // No more lives, shake screen and restart the game
    if ( this.isDead ) {
    console.log("Player is dead!!!")
+   window.music1.stop();
    // delay 1 sec
    this.time.delayedCall(2000,function() {
    // Reset counter before a restart
@@ -271,9 +320,12 @@ collectmeat(player, tile) {
     }
     
     // remove obstacle
-hitobstacle(player, tile) {
-    console.log('obstacle', tile.index );
-    this.obstacleLayer.removeTileAt(tile.x, tile.y); // remove the item
+hitobstacle(player, obstacle) {
+    console.log('obstacle',  obstacle.x, obstacle.y );
+    // this.obstacleLayer.removeTileAt(tile.x, tile.y); // remove the item
+    this.snapSnd.play();
+    window.music1.stop();
+    obstacle.disableBody(true,true);
        // delay 1 sec
        this.time.delayedCall(500,function() {
          this.meatCount = 0
@@ -323,6 +375,7 @@ update() {
      // Check for the vegeCount
      if ( this.player.x >= this.endPoint.x && this.player.y >= this.endPoint.y && this.meatCount > 7 ) {
       console.log('Collected 8 meat, jump to winScene');
+      window.music1.stop();
       this.scene.stop("level3");
       this.scene.start("winScene");
   }
@@ -336,7 +389,7 @@ update() {
 moveRightLeft1(bombs) {
    this.tweens.add({
        targets: this.cat.getChildren().map(function (c) { return c.body.velocity }),
-       x: Phaser.Math.Between(-850, -900) ,
+       x: Phaser.Math.Between(-550, -600) ,
        ease: 'Sine.easeInOut',
        yoyo: true,
        repeat: false
@@ -345,7 +398,7 @@ moveRightLeft1(bombs) {
 moveRightLeft2(bombs) {
    this.tweens.add({
        targets: this.cat.getChildren().map(function (c) { return c.body.velocity }),
-       x:  Phaser.Math.Between(800, 650),
+       x:  Phaser.Math.Between(600, 550),
        ease: 'Sine.easeInOut',
        yoyo: true,
        repeat: false
@@ -356,8 +409,8 @@ moveRightLeft2(bombs) {
         console.log("hitcat");
            
         sprite.disableBody (true, true);
-        // this.bgmusicSnd.loop = false
-        // this.bgmusicSnd.stop();
+        this.bgmusicSnd.loop = false
+        this.bgmusicSnd.stop();
         // this.hitSnd.play();
         this.time.delayedCall(500,function() {
         this.meatCount = 0

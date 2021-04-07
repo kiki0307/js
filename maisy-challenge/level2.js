@@ -15,10 +15,21 @@ preload() {
      var map = this.load.tilemapTiledJSON('map2','assets/tiles2.json');
      this.load.spritesheet('tiles2','assets/Tiles2.png',
      {frameWidth:64,frameHeight:64});
- 
+
+
+    //  player animation
      this.load.atlas('player', 'assets/Maisy.png', 'assets/Maisy.json');
+
+    //  obstacle animation
+     this.load.atlas('trap', 'assets/mousetrap.png', 'assets/mousetrap.json');
  
      this.load.image('heart', 'assets/life.png');
+
+     //mp3
+     this.load.audio('explode', 'assets/error_tone.mp3');
+     this.load.audio('collect', 'assets/collect_item.mp3');
+     this.load.audio('snap', 'assets/mouse_trap.mp3');
+     this.load.audio('bgmusic','assets/shopping.mp3');
 
 }
 
@@ -27,12 +38,25 @@ create() {
  // load the map
  var map = this.make.tilemap({key:'map2'});
  var Tiles = map.addTilesetImage('Tiles2','tiles2');
+
+ // music
+      
+this.explodeSnd = this.sound.add('explode');
+this.collectSnd = this.sound.add('collect');
+this.snapSnd = this.sound.add('snap');
+this.bgmusicSnd = this.sound.add('bgmusic');
+
+window.music1 = this.bgmusicSnd;
+
+window.music1.play();
+
+window.music1.loop = true;
  
  // create the ground layer
  this.groundLayer = map.createDynamicLayer('groundLayer',Tiles,0,0);
  this.shelfLayer = map.createDynamicLayer('shelfLayer',Tiles,0,0);
  this.fruitLayer = map.createDynamicLayer('fruitLayer',Tiles,0,0);
- this.obstacleLayer = map.createDynamicLayer('obstacleLayer',Tiles,0,0);
+//  this.obstacleLayer = map.createDynamicLayer('obstacleLayer',Tiles,0,0);
 
  //world boundaries
  this.physics.world.bounds.width = this.groundLayer.width;
@@ -41,6 +65,13 @@ create() {
  //object layers
  this.startPoint = map.findObject("objectLayer", obj => obj.name === "startPoint");
  this.endPoint = map.findObject("objectLayer", obj => obj.name === "endPoint");
+
+ //obstacle in tiles
+ this.obstacle_1 = map.findObject("objectLayer", obj => obj.name === "obstacle_1");
+ this.obstacle_2 = map.findObject("objectLayer", obj => obj.name === "obstacle_2");
+ this.obstacle_3 = map.findObject("objectLayer", obj => obj.name === "obstacle_3");
+ this.obstacle_4 = map.findObject("objectLayer", obj => obj.name === "obstacle_4");
+ this.obstacle_5 = map.findObject("objectLayer", obj => obj.name === "obstacle_5");
 
 
  //character sprites
@@ -106,13 +137,45 @@ create() {
  repeat: -1
  });
 
+
+
+// trap animation
+this.anims.create({
+key:'trapAnim',
+frames:[
+{key: 'trap', frame: 'trap_1'},
+{key: 'trap', frame: 'trap_2'},
+{key: 'trap', frame: 'trap_3'},
+{key: 'trap', frame: 'trap_4'},
+],
+        
+frameRate:10,
+repeat: -1
+});
+
+
+
+// create obstacle
+this.obstacle_1 = this.physics.add.sprite(this.obstacle_1.x, this.obstacle_1.y, 'trap').play('trapAnim');
+this.obstacle_2 = this.physics.add.sprite(this.obstacle_2.x, this.obstacle_2.y, 'trap').play('trapAnim');
+this.obstacle_3 = this.physics.add.sprite(this.obstacle_3.x, this.obstacle_3.y, 'trap').play('trapAnim');
+this.obstacle_4 = this.physics.add.sprite(this.obstacle_4.x, this.obstacle_4.y, 'trap').play('trapAnim');
+this.obstacle_5 = this.physics.add.sprite(this.obstacle_5.x, this.obstacle_5.y, 'trap').play('trapAnim');
+
+this.physics.add.overlap(this.player, this.obstacle_1, this.hitobstacle, null, this )
+this.physics.add.overlap(this.player, this.obstacle_2, this.hitobstacle, null, this )
+this.physics.add.overlap(this.player, this.obstacle_3, this.hitobstacle, null, this )
+this.physics.add.overlap(this.player, this.obstacle_4, this.hitobstacle, null, this )
+this.physics.add.overlap(this.player, this.obstacle_5, this.hitobstacle, null, this )
+
+
 // collide with obstacle layer
- this.obstacleLayer.setCollisionByProperty({ obstacle: true });
+//  this.obstacleLayer.setCollisionByProperty({ obstacle: true });
 
- this.physics.add.collider(this.obstacleLayer, this.player);
+//  this.physics.add.collider(this.obstacleLayer, this.player);
 
- //   hit obstacle layer
-this.obstacleLayer.setTileIndexCallback(2, this.hitobstacle, this);
+//  //   hit obstacle layer
+// this.obstacleLayer.setTileIndexCallback(2, this.hitobstacle, this);
 
 
 // collide with fruit layer
@@ -170,6 +233,7 @@ console.log('correctfruit', tile.index );
 this.fruitLayer.removeTileAt(tile.x, tile.y); // remove the item
 
 this.fruitCount += 1; 
+this.collectSnd.play();
 console.log(this.fruitCount);
 this.fruitText.setText(this.fruitCount);
 return false;
@@ -183,15 +247,15 @@ this.liveCount -= 1;
 
 // // Default is 3 lives
 if ( this.liveCount === 2) {
- // this.explodeSnd.play();
+ this.explodeSnd.play();
  this.cameras.main.shake(200);
  this.heart3.setVisible(false);
 } else if ( this.liveCount === 1) {
- // this.explodeSnd.play();
+ this.explodeSnd.play();
  this.cameras.main.shake(200);
  this.heart2.setVisible(false);
 } else if ( this.liveCount === 0) {
- // this.explodeSnd.play();
+ this.explodeSnd.play();
  this.cameras.main.shake(1000);
  this.heart1.setVisible(false);
  this.isDead = true;
@@ -201,6 +265,7 @@ if ( this.liveCount === 2) {
 // No more lives, shake screen and restart the game
 if ( this.isDead ) {
  console.log("Player is dead!!!")
+ window.music1.stop();
 // delay 1 sec
 this.time.delayedCall(2000,function() {
 // Reset counter before a restart
@@ -216,9 +281,12 @@ return false;
 
 
 // remove obstacle
-hitobstacle(player, tile) {
-    console.log('obstacle', tile.index );
-    this.obstacleLayer.removeTileAt(tile.x, tile.y); // remove the item
+hitobstacle(player, obstacle) {
+    console.log('obstacle', obstacle.x, obstacle.y );
+    // this.obstacleLayer.removeTileAt(tile.x, tile.y); // remove the item
+    this.snapSnd.play();
+    window.music1.stop();
+    obstacle.disableBody(true,true);
        // delay 1 sec
        this.time.delayedCall(500,function() {
        this.fruitCount = 0
@@ -271,18 +339,12 @@ update() {
     // Check for the vegeCount
     if ( this.player.x >= this.endPoint.x && this.player.y >= this.endPoint.y && this.fruitCount > 4 ) {
     console.log('Collected 5 fruit, jump to level 3');
+    window.music1.stop();
     this.scene.stop("level2");
     this.scene.start("listScene3");
     }
 
-   
 
-       // Check for reaching endPoint object
-    // if ( this.player.x >= this.endPoint.x && this.player.y >= this.endPoint.y ) {
-    //     console.log('Reached endPoint, loading next level');
-    //     this.scene.stop("level2");
-    //     this.scene.start("level3");
-    // }
     
   
 }

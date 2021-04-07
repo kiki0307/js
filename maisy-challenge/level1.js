@@ -20,6 +20,11 @@ preload() {
 
     this.load.image('heart', 'assets/life.png');
 
+    //mp3
+    this.load.audio('explode', 'assets/error_tone.mp3');
+    this.load.audio('collect', 'assets/collect_item.mp3');
+    this.load.audio('bgmusic','assets/shopping.mp3');
+
 
 }
 
@@ -28,6 +33,17 @@ create() {
         // load the map
         var map = this.make.tilemap({key:'map'});
         var Tiles = map.addTilesetImage('Tiles1','tiles');
+
+        // music
+        this.bgmusicSnd = this.sound.add('bgmusic');
+        this.explodeSnd = this.sound.add('explode');
+        this.collectSnd = this.sound.add('collect');
+
+        window.music1 = this.bgmusicSnd;
+
+        window.music1.play();
+   
+        window.music1.loop = true;
         
         // create the ground layer
         this.groundLayer = map.createDynamicLayer('groundLayer',Tiles,0,0);
@@ -156,7 +172,7 @@ create() {
     console.log('correctvege', tile.index );
     this.vegeLayer.removeTileAt(tile.x, tile.y); // remove the item
     this.vegeCount += 1; 
-   
+    this.collectSnd.play();
     console.log(this.vegeCount);
     this.vegeText.setText(this.vegeCount);
     return false;
@@ -170,15 +186,15 @@ wrongvege(player, tile) {
 
     // Default is 3 lives
     if ( this.liveCount === 2) {
-        // this.explodeSnd.play();
+        this.explodeSnd.play();
         this.cameras.main.shake(200);
         this.heart3.setVisible(false);
     } else if ( this.liveCount === 1) {
-        // this.explodeSnd.play();
+        this.explodeSnd.play();
         this.cameras.main.shake(200);
         this.heart2.setVisible(false);
     } else if ( this.liveCount === 0) {
-        // this.explodeSnd.play();
+        this.explodeSnd.play();
         this.cameras.main.shake(1000);
         this.heart1.setVisible(false);
         this.isDead = true;
@@ -244,6 +260,7 @@ update() {
      // Check for the vegeCount
      if ( this.player.x >= this.endPoint.x && this.player.y >= this.endPoint.y && this.vegeCount > 2 ) {
         console.log('Collected 3 vege, jump to level 2');
+        window.music1.stop();
         this.scene.stop("level1");
         this.scene.start("listScene2");
     }

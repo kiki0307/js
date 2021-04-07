@@ -8,11 +8,16 @@ class winScene extends Phaser.Scene {
     preload() {
         this.load.image('win','assets/congratulation.png');
 
+        this.load.audio('winmusic','assets/success.mp3');
+
     }
 
     create () {
 
         this.add.image(0, 0, 'win').setOrigin(0, 0);
+
+        this.winmusic_Snd = this.sound.add('winmusic');
+        this.winmusic_Snd.play();
         
         // this.add.text(0,580, 'Press Spacebar to continue', { font: '24px Courier', fill: '#000000' });
 
@@ -26,7 +31,7 @@ class winScene extends Phaser.Scene {
         spaceDown.on('down', function(){
         // console.log("Spacebar pressed, reply game");
         this.scene.stop("winScene");
-        this.scene.start("mainScene");
+        this.scene.start("creditScene");
         }, this );
 
         // aDown.on('down', function(){

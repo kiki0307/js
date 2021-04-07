@@ -8,11 +8,16 @@ class gameoverScene extends Phaser.Scene {
     preload() {
         this.load.image('gameover','assets/gameOver1.png');
 
+        this.load.audio('failmusic1', 'assets/fail.mp3');
+
     }
 
     create () {
 
         this.add.image(0, 0, 'gameover').setOrigin(0, 0);
+
+        this.failmusic_Snd = this.sound.add('failmusic1');
+        this.failmusic_Snd.play();
         
         // this.add.text(0,580, 'Press Spacebar to continue', { font: '24px Courier', fill: '#000000' });
 
