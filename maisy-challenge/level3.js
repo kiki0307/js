@@ -331,7 +331,7 @@ hitobstacle(player, obstacle) {
          this.meatCount = 0
          this.liveCount = 3;
         // this.scene.restart();
-       this.scene.start("failScene3");
+       this.scene.start("trapScene3");
     },[], this);
     return false;
     }
@@ -415,7 +415,7 @@ moveRightLeft2(bombs) {
         this.time.delayedCall(500,function() {
         this.meatCount = 0
         this.liveCount = 3;
-        this.scene.start("failScene3");
+        this.scene.start("catScene3");
         },[], this);
         
            

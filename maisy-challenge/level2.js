@@ -292,7 +292,7 @@ hitobstacle(player, obstacle) {
        this.fruitCount = 0
        this.liveCount = 3;
         // this.scene.restart();
-       this.scene.start("failScene2");
+       this.scene.start("trapScene2");
     },[], this);
     return false;
     }
