@@ -53,7 +53,7 @@ class introScene extends Phaser.Scene {
       spaceDown.on('down', function(){
         // console.log("Spacebar pressed, goto storyline");
         this.scene.stop("introScene");
-        this.scene.start("introlevelsScene");
+        this.scene.start("storyScene");
         }, this );
 
   }

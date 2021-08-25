@@ -13,6 +13,7 @@ let config = {
   },
   scene: [
     introScene,
+    storyScene,
     introlevelsScene,
     level1,
     level2,
